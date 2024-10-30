@@ -38,8 +38,12 @@ def vote(request, question_id):
         selected_choice.save()
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
 
-def register (request):
-    return HttpResponse('Я страница регистрации')
+def register (request, name, age):
+    return HttpResponse(f"""
+        <h2>О пользователе</h2>
+        <p>Имя: {name}</p>
+        <p>Возраст: {age}</p>
+    """)
 
 def home (request):
     return HttpResponse('А я домашняя страница')
