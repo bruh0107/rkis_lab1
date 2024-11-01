@@ -1,9 +1,14 @@
+from http.client import responses
+
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponsePermanentRedirect, HttpResponseNotFound, \
+    HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from .models import Question, Choice
 from django.template import loader
 from django.urls import reverse
 from django.views import generic
+from django.http import HttpResponse, JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 class IndexView(generic.ListView):
@@ -47,3 +52,35 @@ def register (request, name, age):
 
 def home (request):
     return HttpResponse('А я домашняя страница')
+
+def index(request):
+    bob = Person("bob", 41)
+    return JsonResponse(bob, safe=False, encoder=PersonEncoder)
+
+class Person:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+class PersonEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if(isinstance(obj, Person)):
+            return {"name": obj.name, "age": obj.age}
+        return super().default(obj)
+
+def access(request, age):
+    if age not in range(1, 111):
+        return HttpResponseBadRequest('Некорректные данные')
+    if age > 17:
+        return HttpResponse('Доступ разрешен')
+    else:
+        return HttpResponseForbidden("Доступ заблокирован: Недостаточно лет")
+
+def set(request):
+    username = request.GET.get("username", "Undefined")
+    response = HttpResponse(f"Hello, {username}")
+    response.set_cookie("username", username)
+    return response
+
+def about(request):
+    return render(request, "polls/about.html")
